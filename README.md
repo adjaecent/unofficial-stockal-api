@@ -2,11 +2,16 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/adjaecent/unofficial-stockal-api.svg)](https://pkg.go.dev/github.com/adjaecent/unofficial-stockal-api)
 
-An unofficial **read-only** Go client library for the [Stockal](https://globalinvesting.in/) trading platform API. This library provides a simple and clean interface to **view and analyze** your Stockal account data, portfolio holdings, and performance metrics.
+An unofficial **read-only** Go client library for the [Stockal](https://globalinvesting.in/) trading platform API.
 
-> **🔍 Read-Only Library**: This library is designed for **data retrieval and analysis only**. It cannot place trades, modify orders, or perform any account changes. All trading operations must be done through the official Stockal platform.
+## 📚 Documentation
 
-> **⚠️ Disclaimer**: This is an unofficial library and is not affiliated with or endorsed by Stockal. Use at your own risk and always verify account information through the official Stockal platform.
+- **API Reference**: [pkg.go.dev](https://pkg.go.dev/github.com/adjaecent/unofficial-stockal-api)
+- **OpenAPI Specification**: [API Documentation](https://adjaecent.github.io/unofficial-stockal-api/api)
+
+> **🔍 Read-Only Library**: For data retrieval and analysis only. Cannot place trades or modify accounts.
+
+> **⚠️ Disclaimer**: Unofficial library, not affiliated with Stockal. Use at your own risk.
 
 ## 🚀 Features (Read-Only Data Access)
 
@@ -93,11 +98,9 @@ func main() {
   godoc -http=:6060  # View at http://localhost:6060
   ```
 
-## 📖 Documentation
+## 📖 Local Development
 
-- **Go Documentation**: Run `godoc -http=:6060` and visit http://localhost:6060
-- **API Reference**: See the godoc examples in `example_test.go`
-- **OpenAPI Spec**: Complete specification available in `openapi.yaml`
+Run `godoc -http=:6060` and visit http://localhost:6060 for local documentation.
 
 ## 🔒 Security Considerations
 
