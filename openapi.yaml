@@ -1,0 +1,528 @@
+openapi: 3.0.3
+info:
+  title: Stockal API
+  description: |
+    Unofficial OpenAPI specification for the Stockal trading platform API.
+    
+    Stockal is a platform that enables trading in the US stock market. This API provides
+    endpoints for user authentication, account management, and portfolio operations.
+    
+    ## Authentication
+    
+    All endpoints except `/v3/auth/login` require authentication using a JWT token obtained
+    from the login endpoint. Include the token in the `Authorization` header.
+    
+    ## Error Handling
+    
+    The API returns standard HTTP status codes. Error responses include details about
+    what went wrong.
+    
+    ## Rate Limiting
+    
+    Please be respectful with API usage. The platform may implement rate limiting.
+  version: 2.0.0
+  contact:
+    name: Stockal API (Unofficial)
+    url: https://github.com/kitallis/unofficial-stockal-api
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api-v2.stockal.com
+    description: Production Stockal API server
+
+security:
+  - BearerAuth: []
+
+paths:
+  /v3/auth/login:
+    post:
+      summary: User Authentication
+      description: |
+        Authenticate a user with username and password to receive an access token.
+        
+        The access token must be included in the Authorization header for all
+        subsequent API calls.
+      tags:
+        - Authentication
+      security: []  # No authentication required for login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              username: "your_username"
+              password: "your_password"
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                refresh_token: "refresh_token_here"
+                token_type: "Bearer"
+                expires_in: 1800
+        '401':
+          description: Authentication failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+              example:
+                error: "invalid_credentials"
+                message: "Invalid username or password"
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/users/accountSummary/summary:
+    get:
+      summary: Get Account Summary
+      description: |
+        Retrieve a comprehensive summary of the user's account including cash balances,
+        trading restrictions, portfolio summaries, and unsettled amounts.
+        
+        Requires authentication.
+      tags:
+        - Account
+      responses:
+        '200':
+          description: Account summary retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSummaryResponse'
+              example:
+                code: 200
+                message: "Success"
+                data:
+                  utcTime: "2025-10-08T07:09:16Z"
+                  accountSummary:
+                    cashAvailableForTrade: 1459.5
+                    cashAvailableForWithdrawal: 1459.5
+                    cashBalance: 1459.5
+                    goodFaithViolations: "0 of 3"
+                    restricted: false
+                    cashSettlement:
+                      - utcTime: "2025-10-08T13:30:00.001Z"
+                        cash: 0
+                  unsettledAmount: 0
+                  portfolioSummary:
+                    stockPortfolio:
+                      currentValue: 39698.25
+                      investmentAmount: 26214.85
+                    stackPortfolio:
+                      currentValue: 0
+                      investmentAmount: 0
+                    etfPortfolio:
+                      currentValue: 0
+                      investmentAmount: 0
+                    totalCurrentValue: 39698.25
+                    totalInvestmentAmount: 26214.85
+        '401':
+          description: Unauthorized - invalid or missing access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /v2/users/portfolio/detail:
+    get:
+      summary: Get Portfolio Details
+      description: |
+        Retrieve detailed information about all holdings in the user's portfolio.
+        
+        This includes comprehensive details for each individual holding such as current prices,
+        investment amounts, units owned, gain/loss information, and trading restrictions.
+        
+        Requires authentication.
+      tags:
+        - Portfolio
+      responses:
+        '200':
+          description: Portfolio details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioDetailResponse'
+              example:
+                code: 200
+                message: "Success"
+                data:
+                  pendingData: []
+                  holdings:
+                    - symbol: "AAPL"
+                      ticker: "AAPL"
+                      userID: "user-id-here"
+                      Date: "2024-11-13T20:30:15.901Z"
+                      __v: 0
+                      category: "stock"
+                      status: "successful"
+                      timestamp: 1732062904622
+                      totalInvestment: 1500.00
+                      totalUnit: 10
+                      type: "stock"
+                      code: "AAPL"
+                      company: "Apple Inc."
+                      price: 175.50
+                      listed: true
+                      close: 175.50
+                      priorClose: 174.20
+                      logo: "https://example.com/aapl-logo.png"
+                      sellOnly: false
+                  timestamp: 1759883427211
+                  totalRecords: 1
+        '401':
+          description: Unauthorized - invalid or missing access token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from the login endpoint
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: User's Stockal username
+          example: "your_username"
+        password:
+          type: string
+          format: password
+          description: User's Stockal password
+          example: "your_password"
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: JWT access token for authenticated requests
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          description: Token used to refresh the access token
+          example: "refresh_token_here"
+        token_type:
+          type: string
+          description: Type of token (usually "Bearer")
+          example: "Bearer"
+        expires_in:
+          type: integer
+          description: Token lifetime in seconds
+          example: 1800
+        error:
+          type: string
+          description: Error code if login failed
+          example: "invalid_credentials"
+        message:
+          type: string
+          description: Human-readable error message if login failed
+          example: "Invalid username or password"
+
+    CashSettlement:
+      type: object
+      properties:
+        utcTime:
+          type: string
+          format: date-time
+          description: Settlement date and time in UTC
+          example: "2025-10-08T13:30:00.001Z"
+        cash:
+          type: number
+          format: double
+          description: Amount to be settled
+          example: 0
+
+    AccountSummary:
+      type: object
+      properties:
+        cashAvailableForTrade:
+          type: number
+          format: double
+          description: Cash available for placing new trades
+          example: 1459.5
+        cashAvailableForWithdrawal:
+          type: number
+          format: double
+          description: Cash available for withdrawal
+          example: 1459.5
+        cashBalance:
+          type: number
+          format: double
+          description: Total cash balance in the account
+          example: 1459.5
+        goodFaithViolations:
+          type: string
+          description: Current violations count (e.g., "0 of 3")
+          example: "0 of 3"
+        restricted:
+          type: boolean
+          description: Indicates if the account has trading restrictions
+          example: false
+        cashSettlement:
+          type: array
+          items:
+            $ref: '#/components/schemas/CashSettlement'
+          description: Scheduled cash settlements
+
+    Portfolio:
+      type: object
+      properties:
+        currentValue:
+          type: number
+          format: double
+          description: Current market value of holdings in this portfolio
+          example: 39698.25
+        investmentAmount:
+          type: number
+          format: double
+          description: Total amount invested in this portfolio
+          example: 26214.85
+
+    PortfolioSummary:
+      type: object
+      properties:
+        stockPortfolio:
+          $ref: '#/components/schemas/Portfolio'
+          description: Stock holdings summary
+        stackPortfolio:
+          $ref: '#/components/schemas/Portfolio'
+          description: Stack holdings summary
+        etfPortfolio:
+          $ref: '#/components/schemas/Portfolio'
+          description: ETF holdings summary
+        totalCurrentValue:
+          type: number
+          format: double
+          description: Total current value across all portfolios
+          example: 39698.25
+        totalInvestmentAmount:
+          type: number
+          format: double
+          description: Total invested amount across all portfolios
+          example: 26214.85
+
+    AccountSummaryData:
+      type: object
+      properties:
+        utcTime:
+          type: string
+          format: date-time
+          description: Timestamp when the summary was generated
+          example: "2025-10-08T07:09:16Z"
+        accountSummary:
+          $ref: '#/components/schemas/AccountSummary'
+          description: Account-level information
+        unsettledAmount:
+          type: number
+          format: double
+          description: Amount of unsettled funds
+          example: 0
+        portfolioSummary:
+          $ref: '#/components/schemas/PortfolioSummary'
+          description: Portfolio-level summaries
+
+    AccountSummaryResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP response code
+          example: 200
+        message:
+          type: string
+          description: Response message (usually "Success")
+          example: "Success"
+        data:
+          $ref: '#/components/schemas/AccountSummaryData'
+          description: Actual account summary data
+
+    Holding:
+      type: object
+      properties:
+        symbol:
+          type: string
+          description: Stock symbol (e.g., "AAPL")
+          example: "AAPL"
+        ticker:
+          type: string
+          description: Trading ticker symbol
+          example: "AAPL"
+        userID:
+          type: string
+          description: User's unique identifier
+          example: "user-id-here"
+        Date:
+          type: string
+          format: date-time
+          description: Last update date for this holding
+          example: "2024-11-13T20:30:15.901Z"
+        __v:
+          type: integer
+          description: Version field from MongoDB
+          example: 0
+        category:
+          type: string
+          description: Asset category (e.g., "stock")
+          example: "stock"
+        status:
+          type: string
+          description: Holding status (e.g., "successful")
+          example: "successful"
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp of the last update
+          example: 1732062904622
+        totalInvestment:
+          type: number
+          format: double
+          description: Total amount invested in this holding
+          example: 1500.00
+        totalUnit:
+          type: number
+          format: double
+          description: Number of shares/units owned
+          example: 10
+        type:
+          type: string
+          description: Asset type (e.g., "stock")
+          example: "stock"
+        code:
+          type: string
+          description: Asset code
+          example: "AAPL"
+        company:
+          type: string
+          description: Full company name
+          example: "Apple Inc."
+        price:
+          type: number
+          format: double
+          description: Current price per share
+          example: 175.50
+        listed:
+          type: boolean
+          description: Indicates if the asset is currently listed/tradeable
+          example: true
+        close:
+          type: number
+          format: double
+          description: Current closing price
+          example: 175.50
+        priorClose:
+          type: number
+          format: double
+          description: Previous day's closing price
+          example: 174.20
+        logo:
+          type: string
+          format: uri
+          description: URL to the company's logo image (optional)
+          example: "https://example.com/aapl-logo.png"
+        sellOnly:
+          type: boolean
+          description: Indicates if only sell operations are allowed (optional)
+          example: false
+
+    PortfolioDetailData:
+      type: object
+      properties:
+        pendingData:
+          type: array
+          items: {}
+          description: Any pending transactions (usually empty)
+          example: []
+        holdings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Holding'
+          description: All current holdings in the portfolio
+        timestamp:
+          type: integer
+          format: int64
+          description: Unix timestamp when the data was generated
+          example: 1759883427211
+        totalRecords:
+          type: integer
+          description: Total number of holdings
+          example: 23
+
+    PortfolioDetailResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP response code
+          example: 200
+        message:
+          type: string
+          description: Response message (usually "Success")
+          example: "Success"
+        data:
+          $ref: '#/components/schemas/PortfolioDetailData'
+          description: Actual portfolio detail data
+
+    ErrorResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: HTTP error code
+          example: 401
+        message:
+          type: string
+          description: Error message
+          example: "Unauthorized"
+        error:
+          type: string
+          description: Error type or code
+          example: "invalid_token"
+
+tags:
+  - name: Authentication
+    description: User authentication and token management
+  - name: Account
+    description: Account-level information and summaries
+  - name: Portfolio
+    description: Portfolio and holdings management
