@@ -21,8 +21,8 @@ func main() {
 	defer cancel()
 
 	// Example credentials (replace with actual credentials)
-	username := "your_username"
-	password := "your_password"
+	username := "nid90"
+	password := "P93WmwB7P7658uy"
 
 	// Attempt to login
 	resp, err := client.Login(ctx, username, password)
