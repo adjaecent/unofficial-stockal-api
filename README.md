@@ -1,7 +1,6 @@
 # Unofficial Stockal API Go Library (Read-Only)
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/adjaecent/unofficial-stockal-api.svg)](https://pkg.go.dev/github.com/adjaecent/unofficial-stockal-api)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 An unofficial **read-only** Go client library for the [Stockal](https://globalinvesting.in/) trading platform API. This library provides a simple and clean interface to **view and analyze** your Stockal account data, portfolio holdings, and performance metrics.
 
@@ -72,68 +71,6 @@ func main() {
         fmt.Printf("🏢 %s (%s): $%.2f (%.2f%%)\n",
             holding.Company, holding.Symbol, currentValue, gainLossPercent)
     }
-}
-```
-
-## 📚 API Reference
-
-### Authentication
-
-#### `Login(username, password string) (*LoginResponse, error)`
-
-Authenticate with Stockal and retrieve access token.
-
-```go
-client := stockal.NewClient()
-resp, err := client.Login("username", "password")
-if err != nil {
-    log.Fatal(err)
-}
-
-fmt.Printf("Access token: %s\n", resp.Data.AccessToken)
-fmt.Printf("Expires: %s\n", resp.Data.ExpiryAccessToken)
-```
-
-### Account Information
-
-#### `GetAccountSummary() (*AccountSummaryResponse, error)`
-
-Retrieve comprehensive account summary including cash balances and portfolio totals (read-only).
-
-```go
-summary, err := client.GetAccountSummary()
-if err != nil {
-    log.Fatal(err)
-}
-
-// Cash information
-fmt.Printf("Cash for trading: $%.2f\n", summary.Data.AccountSummary.CashAvailableForTrade)
-fmt.Printf("Cash for withdrawal: $%.2f\n", summary.Data.AccountSummary.CashAvailableForWithdrawal)
-
-// Portfolio totals
-fmt.Printf("Total value: $%.2f\n", summary.Data.PortfolioSummary.TotalCurrentValue)
-fmt.Printf("Total invested: $%.2f\n", summary.Data.PortfolioSummary.TotalInvestmentAmount)
-```
-
-### Portfolio Analysis
-
-#### `GetPortfolioDetail() (*PortfolioDetailResponse, error)`
-
-Get detailed information about all holdings including current prices and performance (read-only analysis).
-
-```go
-portfolio, err := client.GetPortfolioDetail()
-if err != nil {
-    log.Fatal(err)
-}
-
-for _, holding := range portfolio.Data.Holdings {
-    currentValue := holding.TotalUnit * holding.Price
-    gainLoss := currentValue - holding.TotalInvestment
-    gainLossPercent := (gainLoss / holding.TotalInvestment) * 100
-
-    fmt.Printf("%s: %.4f shares @ $%.2f = $%.2f (%.2f%%)\n",
-        holding.Symbol, holding.TotalUnit, holding.Price, currentValue, gainLossPercent)
 }
 ```
 
